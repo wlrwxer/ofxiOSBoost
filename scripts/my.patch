@@ -1,0 +1,69 @@
+diff --git a/libs/boost/ios/boost.a b/libs/boost/ios/boost.a
+index b863fe2..6c876b8 100644
+Binary files a/libs/boost/ios/boost.a and b/libs/boost/ios/boost.a differ
+diff --git a/scripts/build.sh b/scripts/build.sh
+index 102a738..75fbe4c 100755
+--- a/scripts/build.sh
++++ b/scripts/build.sh
+@@ -146,7 +146,7 @@ postcleanEverything()
+ 	rm -rf $PREFIXDIR
+ 	rm -rf $IOSBUILDDIR/armv6/obj
+     rm -rf $IOSBUILDDIR/armv7/obj
+-    rm -rf $IOSBUILDDIR/armv7s/obj
++    	rm -rf $IOSBUILDDIR/armv7s/obj
+ 	rm -rf $IOSBUILDDIR/arm64/obj
+     rm -rf $IOSBUILDDIR/i386/obj
+ 	rm -rf $IOSBUILDDIR/x86_64/obj
+@@ -171,7 +171,7 @@ downloadBoost()
+ {
+     if [ ! -s $TARBALLDIR/boost_${BOOST_VERSION2}.tar.bz2 ]; then
+         echo "Downloading boost ${BOOST_VERSION}"
+-        curl -L -o $TARBALLDIR/boost_${BOOST_VERSION2}.tar.bz2 http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION2}.tar.bz2/download
++        #curl -L -o $TARBALLDIR/boost_${BOOST_VERSION2}.tar.bz2 http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION2}.tar.bz2/download
+     fi
+ 
+     doneSection
+@@ -209,7 +209,7 @@ updateBoost()
+ 
+     cat >> $BOOST_SRC/tools/build/example/user-config.jam <<EOF
+ using darwin : ${IPHONE_SDKVERSION}~iphone
+-: $XCODE_ROOT/Toolchains/XcodeDefault.xctoolchain/usr/bin/$COMPILER -arch armv7 -arch armv7s -arch arm64 -fvisibility=hidden -fvisibility-inlines-hidden $EXTRA_CPPFLAGS
++: $XCODE_ROOT/Toolchains/XcodeDefault.xctoolchain/usr/bin/$COMPILER -arch armv6 -arch armv7 -arch armv7s -arch arm64 -fvisibility=hidden -fvisibility-inlines-hidden $EXTRA_CPPFLAGS
+ : <striper> <root>$XCODE_ROOT/Platforms/iPhoneOS.platform/Developer
+ : <architecture>arm <target-os>iphone
+ ;
+@@ -311,6 +311,7 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
+     cd $BOOST_SRC
+ 
+     mkdir -p $IOSBUILDDIR/armv7/obj
++    mkdir -p $IOSBUILDDIR/armv6/obj
+     mkdir -p $IOSBUILDDIR/armv7s/obj
+ 	mkdir -p $IOSBUILDDIR/arm64/obj
+     mkdir -p $IOSBUILDDIR/i386/obj
+@@ -324,6 +325,7 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
+         ALL_LIBS="$ALL_LIBS libboost_$NAME.a"
+ 
+         $ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_$NAME.a" -thin armv7 -o $IOSBUILDDIR/armv7/libboost_$NAME.a
++        $ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_$NAME.a" -thin armv6 -o $IOSBUILDDIR/armv6/libboost_$NAME.a
+         $ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_$NAME.a" -thin armv7s -o $IOSBUILDDIR/armv7s/libboost_$NAME.a
+ 		$ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_$NAME.a" -thin arm64 -o $IOSBUILDDIR/arm64/libboost_$NAME.a
+ 
+@@ -337,7 +339,8 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
+     for NAME in $ALL_LIBS; do
+         echo Decomposing $NAME...
+         (cd $IOSBUILDDIR/armv7/obj; ar -x ../$NAME );
+-        (cd $IOSBUILDDIR/armv7s/obj; ar -x ../$NAME );
++    (cd $IOSBUILDDIR/armv6/obj; ar -x ../$NAME );
++    (cd $IOSBUILDDIR/armv7s/obj; ar -x ../$NAME );
+ 		(cd $IOSBUILDDIR/arm64/obj; ar -x ../$NAME );
+         (cd $IOSBUILDDIR/i386/obj; ar -x ../$NAME );
+ 		(cd $IOSBUILDDIR/x86_64/obj; ar -x ../$NAME );
+@@ -426,7 +429,7 @@ buildIncludes
+ 
+ restoreBoost
+ 
+-postcleanEverything
++#postcleanEverything
+ 
+ echo "Completed successfully"
+ 
